@@ -1,0 +1,12 @@
+services:
+  db:
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+
+  frontend:
+    ports:
+      - ${VITE_PORT}:${VITE_PORT}
+
+  web:
+    ports:
+      - ${WEB_PORT}:${WEB_PORT}

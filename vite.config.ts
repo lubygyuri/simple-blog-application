@@ -28,4 +28,15 @@ export default defineConfig({
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
         },
     },
+    server: {
+        host: true,
+        hmr: {
+            host: 'sba.test',
+            protocol: 'ws'
+        },
+        port: 5173,
+        watch: {
+            usePolling: true,
+        }
+    }
 });

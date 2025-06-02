@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build:
+      context: ./docker/frontend
+      dockerfile: prod.Dockerfile
+
+  web:
+    ports:
+      - ${WEB_PORT}:${WEB_PORT}
+      - ${WEB_SECURE_PORT}:${WEB_SECURE_PORT}
+    networks:
+      - sba-network
+      - default

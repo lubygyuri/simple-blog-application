@@ -1,0 +1,110 @@
+services:
+  backend:
+    build:
+      context: ./docker/backend
+    configs:
+      - source: php_ini
+        target: /usr/local/etc/php/conf.d/php.ini
+    depends_on:
+      - db
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+    expose:
+      - ${BACKEND_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - ${SRC_DIR}:/var/www/html/simple-blog-application
+    networks:
+      - sba-network
+
+  db:
+    build:
+      context: ./docker/db
+    configs:
+      - source: db_conf
+        target: /etc/postgresql/conf.d/postgresql.conf
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+      PGTZ: ${TZ:-Europe/Budapest}
+    expose:
+      - ${DB_PORT:-5432}
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - ${DB_DATA_DIR}:/var/lib/postgresql/data
+      - ./docker/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./docker/db/dumps:/dumps
+    networks:
+      - sba-network
+
+  frontend:
+    build:
+      context: ./docker/frontend
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+    depends_on:
+      - backend
+    volumes:
+      - ${SRC_DIR}:/var/www/html/simple-blog-application
+    networks:
+      - sba-network
+
+  redis:
+    build:
+      context: ./docker/redis
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+    expose:
+      - ${CACHE_PORT}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sba-network
+
+  web:
+    build:
+      context: ./docker/web
+    configs:
+      - source: nginx
+        target: /etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - ${SRC_DIR}:/var/www/html/simple-blog-application
+    networks:
+      - sba-network
+
+configs:
+  db_conf:
+    file: ${DB_CONF_FILE}
+  nginx:
+    file: ${WEB_CONF_FILE}
+  php_ini:
+    file: ${PHP_INI_FILE}
+
+networks:
+  sba-network:
+    driver: bridge
