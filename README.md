@@ -41,7 +41,7 @@ cp prod.compose.override.yml compose.override.yml
 #### 2.4. Configure local domain (only for development)
 Add the following line to your `/etc/hosts` file:
 ```bash
-sudo echo "127.0.0.1 sba.test" >> /etc/hosts
+echo "127.0.0.1 sba.test" | sudo tee -a /etc/hosts
 ```
 
 ### 3. Build and start docker containers
