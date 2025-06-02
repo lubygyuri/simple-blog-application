@@ -11,7 +11,7 @@ interface Props {
     variant?: 'danger' | 'warning' | 'info';
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     confirmText: 'Confirm',
     cancelText: 'Cancel',
     variant: 'danger',
